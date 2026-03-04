@@ -396,7 +396,8 @@ function removeEventFromHTML(html, slug){
 }
 
 function parseEventsFromHTML(html){
-  var events = [];
+  var events = [  {id:"luma-com-coffeeonusethcc", name:"Coffee On Us ☕ | Espresso at EthCC", host:"Espresso", start:"2026-03-03T08:00", venue:"Good Mate Coffee Cannes Cannes, Provence-Alpes-Côte d'Azur", lat:43.5513, lng:7.0170, url:"https://luma.com/luma.com/coffeeonusethcc", desc:"Coffee On Us ☕ | Espresso at EthCC"},
+];
   var rawStart = html.indexOf('var RAW = [');
   var rawEnd   = html.indexOf('];', rawStart);
   if(rawStart === -1 || rawEnd === -1) return events;
