@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EthCC[9] Admin · Sidechain</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07090d; --card:#0e141e; --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --accent:#00e5ff; --accent2:#7b61ff; --text:#dde4ed; --text2:#7a8ca0; --text3:#3d4f62;
+  --green:#00d68f; --red:#ff6b6b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.01) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.01) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
+
+/* ── LOCK SCREEN ── */
+#lockScreen{width:100%;max-width:420px;}
+.lock-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#000;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;}
+.lock-card{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:32px;}
+.lock-card h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+.lock-card p{color:var(--text2);font-size:13px;margin-bottom:24px;}
+.field-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;}
+.field-input{width:100%;background:#07090d;border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;margin-bottom:12px;}
+.field-input:focus{border-color:var(--accent);}
+.btn-primary{width:100%;padding:12px;background:var(--accent);color:#000;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:opacity .15s;margin-top:4px;}
+.btn-primary:hover{opacity:.85;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.err-msg{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.2);color:var(--red);font-size:12px;padding:8px 12px;border-radius:6px;margin-top:10px;display:none;}
+
+/* ── ADMIN APP ── */
+#adminApp{display:none;width:100%;max-width:680px;}
+.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.app-header-left{display:flex;align-items:center;gap:12px;}
+.app-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
+.app-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.badge-live{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(0,214,143,.1);border:1px solid rgba(0,214,143,.2);border-radius:20px;font-family:'DM Mono',monospace;font-size:10px;color:var(--green);}
+.badge-live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.logout-btn{background:none;border:1px solid var(--border2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;}
+.logout-btn:hover{border-color:var(--border);color:var(--text);}
+
+/* ── CONFIG BANNER ── */
+#configBanner{background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:none;}
+#configBanner h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#ffd60a;margin-bottom:8px;}
+#configBanner p{font-size:12px;color:var(--text2);line-height:1.7;}
+#configBanner code{color:var(--accent);font-family:'DM Mono',monospace;font-size:11px;}
+
+/* ── SETUP SECTION ── */
+.setup-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:24px;margin-bottom:20px;}
+.setup-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.setup-card p{font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-group{display:flex;flex-direction:column;}
+.field-input.sm{font-size:12px;padding:9px 12px;margin-bottom:0;}
+.hint{font-size:11px;color:var(--text3);margin-top:4px;}
+.hint a{color:var(--accent);text-decoration:none;}
+
+/* ── ADD EVENT FORM ── */
+.form-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:24px;margin-bottom:20px;}
+.form-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.form-card > p{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.6;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.form-grid .full{grid-column:1/-1;}
+.form-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.btn-add{padding:11px 24px;background:var(--accent);color:#000;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all .15s;}
+.btn-add:hover{opacity:.85;}
+.btn-add:disabled{opacity:.4;cursor:not-allowed;}
+.btn-clear{padding:11px 18px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;border-radius:8px;cursor:pointer;}
+.btn-clear:hover{border-color:var(--border);color:var(--text);}
+.status-msg{font-family:'DM Mono',monospace;font-size:11px;padding:8px 14px;border-radius:7px;display:none;flex-shrink:0;}
+.status-msg.ok{display:block;background:rgba(0,214,143,.08);color:var(--green);border:1px solid rgba(0,214,143,.15);}
+.status-msg.err{display:block;background:rgba(255,107,107,.08);color:var(--red);border:1px solid rgba(255,107,107,.15);}
+.status-msg.info{display:block;background:rgba(0,229,255,.06);color:var(--accent);border:1px solid rgba(0,229,255,.12);}
+
+/* ── EVENT LIST ── */
+.events-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:24px;}
+.events-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.events-card > p{font-size:12px;color:var(--text2);margin-bottom:16px;}
+.event-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;}
+.event-item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:#07090d;border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+.ei-name{font-size:13px;font-weight:500;}
+.ei-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);margin-top:2px;}
+.ei-slug{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);}
+.ei-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;}
+.ei-del:hover{color:var(--red);}
+.empty-state{color:var(--text3);font-size:13px;text-align:center;padding:24px 0;}
+
+/* ── PROGRESS OVERLAY ── */
+#progressOverlay{display:none;position:fixed;inset:0;background:rgba(7,9,13,.9);backdrop-filter:blur(8px);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#progressOverlay.show{display:flex;}
+.progress-spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-text{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);}
+.progress-steps{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.ps{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;}
+.ps.done{color:var(--green);}
+.ps.active{color:var(--accent);}
+.ps::before{content:'○';font-size:10px;}
+.ps.done::before{content:'✓';}
+.ps.active::before{content:'●';animation:pulse .8s infinite;}
+
+@media(max-width:600px){
+  .form-grid,.field-row{grid-template-columns:1fr;}
+  .form-grid .full{grid-column:1;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-logo">
+    <div class="logo-mark">S</div>
+    <span class="logo-text">Sidechain Admin</span>
+  </div>
+  <div class="lock-card">
+    <h2>Event Manager</h2>
+    <p>EthCC[9] Side Event Guide &mdash; restricted access</p>
+    <label class="field-label">Password</label>
+    <input class="field-input" type="password" id="pwInput" placeholder="Enter password" autocomplete="current-password"/>
+    <button class="btn-primary" onclick="unlock()">Enter</button>
+    <div class="err-msg" id="pwErr">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+
+  <div class="app-header">
+    <div class="app-header-left">
+      <div class="logo-mark">S</div>
+      <div>
+        <div class="app-title">Event Manager</div>
+        <div class="app-sub">EthCC[9] &middot; Cannes &middot; Mar 30&ndash;Apr 2, 2026</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge-live"><span class="badge-live-dot"></span>Live on Vercel</span>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </div>
+
+  <!-- Config warning if not set up -->
+  <div id="configBanner">
+    <h3>⚙ One-time setup required</h3>
+    <p>
+      Before you can publish events, set your GitHub details below.<br>
+      You only need to do this once &mdash; they're saved in this browser.
+    </p>
+  </div>
+
+  <!-- GitHub Setup -->
+  <div class="setup-card">
+    <h3>GitHub Settings</h3>
+    <p>Your repo details and a Personal Access Token so the admin can push changes. Saved in your browser &mdash; never shared.</p>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">GitHub Username</label>
+        <input class="field-input sm" id="ghUser" placeholder="e.g. sidechainHQ" autocomplete="off"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Repository Name</label>
+        <input class="field-input sm" id="ghRepo" placeholder="e.g. ethcc-guide" autocomplete="off"/>
+      </div>
+      <div class="field-group" style="grid-column:1/-1;">
+        <label class="field-label">Personal Access Token <span style="color:var(--text3)">(needs <code style="color:var(--accent)">repo</code> scope)</span></label>
+        <input class="field-input sm" id="ghToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"/>
+        <span class="hint">Create one at <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a> &rarr; select <strong>repo</strong> scope &rarr; copy token</span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Branch</label>
+        <input class="field-input sm" id="ghBranch" placeholder="main" autocomplete="off"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Path to index.html in repo</label>
+        <input class="field-input sm" id="ghPath" placeholder="index.html" autocomplete="off"/>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
+      <button class="btn-add" onclick="saveConfig()" style="padding:9px 20px;font-size:12px;">Save Settings</button>
+      <span id="configMsg" class="status-msg"></span>
+    </div>
+  </div>
+
+  <!-- Add Event Form -->
+  <div class="form-card">
+    <h3>Add a New Event</h3>
+    <p>Fill in the event details from the Luma page. The <strong>slug</strong> is the part after <code style="color:var(--accent);font-family:'DM Mono',monospace;">luma.com/</code> in the URL &mdash; e.g. <code style="color:var(--accent);font-family:'DM Mono',monospace;">qrtylk2u</code></p>
+
+    <div class="form-grid">
+      <div class="field-group full">
+        <label class="field-label">Event Link *</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+          <button type="button" id="typeToggleLuma" onclick="setLinkType('luma')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--accent);background:var(--accent);color:#000;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;font-weight:500;">Luma</button>
+          <button type="button" id="typeToggleCustom" onclick="setLinkType('custom')" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;">Custom URL</button>
+        </div>
+        <div id="lumaSlugField">
+          <input class="field-input sm" id="f_slug" placeholder="e.g. qrtylk2u" autocomplete="off" spellcheck="false" style="margin-bottom:0;"/>
+          <span class="hint">Paste the slug from luma.com/<strong>slug-here</strong> or the full URL</span>
+        </div>
+        <div id="customUrlField" style="display:none;">
+          <input class="field-input sm" id="f_custom_url" placeholder="https://example.com/event" autocomplete="off" spellcheck="false" style="margin-bottom:0;"/>
+          <span class="hint">Full URL where people will be redirected to RSVP</span>
+        </div>
+      </div>
+      <div class="field-group full">
+        <label class="field-label">Event Name *</label>
+        <input class="field-input sm" id="f_name" placeholder="e.g. RedStone Bolt Cannes Run ⚡" autocomplete="off"/>
+      </div>
+      <div class="field-group full">
+        <label class="field-label">Host / Organiser</label>
+        <input class="field-input sm" id="f_host" placeholder="e.g. RedStone France" autocomplete="off"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Date *</label>
+        <input class="field-input sm" id="f_date" type="date" min="2026-03-28" max="2026-04-02" value="2026-04-01"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Start Time (Cannes / CET)</label>
+        <input class="field-input sm" id="f_time" type="time" value="18:00"/>
+      </div>
+      <div class="field-group full">
+        <label class="field-label">Venue Name</label>
+        <input class="field-input sm" id="f_venue" placeholder="e.g. Le kiosque à musique" autocomplete="off"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Latitude <span style="color:var(--text3)">(optional)</span></label>
+        <input class="field-input sm" id="f_lat" placeholder="43.5513" autocomplete="off"/>
+        <span class="hint"><a href="https://maps.google.com" target="_blank">Google Maps</a> → right-click venue → copy coords</span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Longitude <span style="color:var(--text3)">(optional)</span></label>
+        <input class="field-input sm" id="f_lng" placeholder="7.0170" autocomplete="off"/>
+      </div>
+      <div class="field-group full">
+        <label class="field-label">Short Description</label>
+        <input class="field-input sm" id="f_desc" placeholder="One line about the event" autocomplete="off"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Category / Tag</label>
+        <select class="field-input sm" id="f_tag" style="cursor:pointer;">
+          <option value="">Auto-detect</option>
+          <option value="Builder">⚙️ Builder</option>
+          <option value="Investor">💰 Investor</option>
+          <option value="Fitness">🏃 Fitness</option>
+          <option value="Marketing">📣 Marketing</option>
+          <option value="Social">🎉 Social</option>
+          <option value="General">✦ General</option>
+        </select>
+        <span class="hint">Leave as Auto-detect to tag based on event name</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-add" id="publishBtn" onclick="publishEvent()">&#8679; Publish Event</button>
+      <button class="btn-clear" onclick="clearForm()">Clear</button>
+      <span id="publishMsg" class="status-msg"></span>
+    </div>
+  </div>
+
+  <!-- Current Events -->
+  <div class="events-card">
+    <h3>Current Events</h3>
+    <p>All events currently live on the site. Click ✕ to remove an event &mdash; this will also redeploy.</p>
+    <div class="event-list" id="eventList">
+      <div class="empty-state">Loading events...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Progress Overlay -->
+<div id="progressOverlay">
+  <div class="progress-spinner"></div>
+  <div class="progress-steps" id="progressSteps">
+    <div class="ps" id="ps1">Reading current index.html from GitHub</div>
+    <div class="ps" id="ps2">Adding event to the file</div>
+    <div class="ps" id="ps3">Pushing update to GitHub</div>
+    <div class="ps" id="ps4">Vercel deploying... (~30s)</div>
+  </div>
+</div>
+
+<script>
+/* ─── CONFIG ──────────────────────────────────────────────────────────── */
+// Set your admin password here
+var ADMIN_PASSWORD = 'sidechain2026';
+
+var LS_CONFIG = 'ethcc_admin_config';
+var LS_AUTH   = 'ethcc_admin_auth';
+
+/* ─── AUTH ────────────────────────────────────────────────────────────── */
+function unlock(){
+  var pw = document.getElementById('pwInput').value;
+  if(pw === ADMIN_PASSWORD){
+    sessionStorage.setItem(LS_AUTH,'1');
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('adminApp').style.display='block';
+    init();
+  } else {
+    document.getElementById('pwErr').style.display='block';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+  }
+}
+function logout(){
+  sessionStorage.removeItem(LS_AUTH);
+  location.reload();
+}
+document.getElementById('pwInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter') unlock();
+});
+
+/* ─── INIT ────────────────────────────────────────────────────────────── */
+function init(){
+  // Check if already logged in
+  if(sessionStorage.getItem(LS_AUTH)==='1'){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('adminApp').style.display='block';
+  }
+  loadConfig();
+  loadEventList();
+}
+
+// Auto-login if session active
+if(sessionStorage.getItem(LS_AUTH)==='1') init();
+
+/* ─── GITHUB CONFIG ───────────────────────────────────────────────────── */
+function loadConfig(){
+  var cfg = getConfig();
+  if(cfg.user)   document.getElementById('ghUser').value   = cfg.user;
+  if(cfg.repo)   document.getElementById('ghRepo').value   = cfg.repo;
+  if(cfg.token)  document.getElementById('ghToken').value  = cfg.token;
+  if(cfg.branch) document.getElementById('ghBranch').value = cfg.branch;
+  if(cfg.path)   document.getElementById('ghPath').value   = cfg.path;
+  if(!cfg.user || !cfg.token){
+    document.getElementById('configBanner').style.display='block';
+  }
+}
+
+function getConfig(){
+  try{ return JSON.parse(localStorage.getItem(LS_CONFIG)||'{}'); }catch(e){ return {}; }
+}
+
+function saveConfig(){
+  var cfg = {
+    user:   document.getElementById('ghUser').value.trim(),
+    repo:   document.getElementById('ghRepo').value.trim(),
+    token:  document.getElementById('ghToken').value.trim(),
+    branch: document.getElementById('ghBranch').value.trim() || 'main',
+    path:   document.getElementById('ghPath').value.trim()   || 'index.html'
+  };
+  if(!cfg.user || !cfg.repo || !cfg.token){
+    showMsg('configMsg','err','Please fill in username, repo and token');
+    return;
+  }
+  localStorage.setItem(LS_CONFIG, JSON.stringify(cfg));
+  document.getElementById('configBanner').style.display='none';
+  showMsg('configMsg','ok','✓ Settings saved');
+}
+
+/* ─── GITHUB API ──────────────────────────────────────────────────────── */
+async function ghGet(cfg){
+  var url = 'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+cfg.path+'?ref='+cfg.branch;
+  var r = await fetch(url, {
+    headers:{ 'Authorization':'token '+cfg.token, 'Accept':'application/vnd.github.v3+json' }
+  });
+  if(!r.ok) throw new Error('GitHub fetch failed: '+r.status+' – check your username, repo and token');
+  return r.json();
+}
+
+async function ghPut(cfg, sha, content, message){
+  var url = 'https://api.github.com/repos/'+cfg.user+'/'+cfg.repo+'/contents/'+cfg.path;
+  var r = await fetch(url, {
+    method:'PUT',
+    headers:{ 'Authorization':'token '+cfg.token, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+    body: JSON.stringify({ message:message, content:btoa(unescape(encodeURIComponent(content))), sha:sha, branch:cfg.branch })
+  });
+  if(!r.ok){
+    var err = await r.json().catch(function(){ return {}; });
+    throw new Error('GitHub push failed: '+(err.message||r.status));
+  }
+  return r.json();
+}
+
+/* ─── EVENT HELPERS ───────────────────────────────────────────────────── */
+function makeEventLine(ev){
+  var rawId = (ev.slug || ev.name).replace(/[^a-z0-9]/gi,'-').toLowerCase().replace(/-+/g,'-').slice(0,40);
+  var start = ev.date+'T'+ev.time;
+  var lat   = ev.lat   || '43.5513';
+  var lng   = ev.lng   || '7.0170';
+  var url   = ev.customUrl ? ev.customUrl : 'https://luma.com/'+ev.slug;
+  var desc  = (ev.desc||ev.name).replace(/"/g,"'");
+  var name  = ev.name.replace(/"/g,"'");
+  var host  = (ev.host||'').replace(/"/g,"'");
+  var venue = (ev.venue||'Cannes').replace(/"/g,"'");
+  var tagPart = ev.tag ? ', tag:"'+ev.tag+'"' : '';
+  return '  {id:"'+rawId+'", name:"'+name+'", host:"'+host+'", start:"'+start+'", venue:"'+venue+'", lat:'+lat+', lng:'+lng+', url:"'+url+'"'+tagPart+', desc:"'+desc+'"},';
+}
+
+function insertEventIntoHTML(html, eventLine){
+  // Find var RAW = [ ... ]; block robustly
+  var rawStart = html.indexOf('var RAW = [');
+  if(rawStart === -1) throw new Error('Could not find RAW array in index.html — make sure Path points to the correct file');
+  // Find the closing ]; by scanning from end of RAW declaration
+  var searchFrom = rawStart + 11;
+  var depth = 1;
+  var i = searchFrom;
+  while(i < html.length && depth > 0){
+    if(html[i]==='[') depth++;
+    else if(html[i]===']') depth--;
+    i++;
+  }
+  if(depth !== 0) throw new Error('Could not find end of RAW array');
+  // i is now pointing just after the ]
+  var closingIdx = i - 1; // position of ]
+  return html.slice(0, closingIdx) + eventLine + '\n' + html.slice(closingIdx);
+}
+
+function removeEventFromHTML(html, slug){
+  var lines = html.split('\n');
+  var urlPattern = slug;
+  var filtered = lines.filter(function(l){ return !l.includes(urlPattern); });
+  if(filtered.length === lines.length) throw new Error('Event not found in file');
+  return filtered.join('\n');
+}
+
+function parseEventsFromHTML(html){
+  var events = [];
+  var rawStart = html.indexOf('var RAW = [');
+  if(rawStart === -1) return events;
+  // Find end bracket robustly
+  var searchFrom = rawStart + 11;
+  var depth = 1, i = searchFrom;
+  while(i < html.length && depth > 0){
+    if(html[i]==='[') depth++;
+    else if(html[i]===']') depth--;
+    i++;
+  }
+  var block = html.slice(rawStart, i);
+  var re = /\{id:"([^"]+)",\s*name:"([^"]+)",\s*host:"([^"]*)",\s*start:"([^"]+)",\s*venue:"([^"]*)"[^}]*url:"([^"]+)"(?:[^}]*tag:"([^"]*)")?/g;
+  var m;
+  while((m = re.exec(block)) !== null){
+    events.push({ id:m[1], name:m[2], host:m[3], start:m[4], venue:m[5], url:m[6], tag:m[7]||'' });
+  }
+  return events;
+}
+
+/* ─── LINK TYPE TOGGLE ───────────────────────────────────────────────── */
+function setLinkType(type){
+  var lumaBtn   = document.getElementById('typeToggleLuma');
+  var customBtn = document.getElementById('typeToggleCustom');
+  var lumaField   = document.getElementById('lumaSlugField');
+  var customField = document.getElementById('customUrlField');
+  if(type==='luma'){
+    lumaBtn.style.background   = 'var(--accent)';
+    lumaBtn.style.color        = '#000';
+    lumaBtn.style.borderColor  = 'var(--accent)';
+    customBtn.style.background = 'transparent';
+    customBtn.style.color      = 'var(--text2)';
+    customBtn.style.borderColor= 'var(--border2)';
+    lumaField.style.display    = 'block';
+    customField.style.display  = 'none';
+  } else {
+    customBtn.style.background = 'var(--accent)';
+    customBtn.style.color      = '#000';
+    customBtn.style.borderColor= 'var(--accent)';
+    lumaBtn.style.background   = 'transparent';
+    lumaBtn.style.color        = 'var(--text2)';
+    lumaBtn.style.borderColor  = 'var(--border2)';
+    customField.style.display  = 'block';
+    lumaField.style.display    = 'none';
+  }
+}
+
+/* ─── PUBLISH ─────────────────────────────────────────────────────────── */
+async function publishEvent(){
+  var cfg = getConfig();
+  if(!cfg.user || !cfg.token){ showMsg('publishMsg','err','Set up GitHub settings first'); return; }
+
+  var linkType = document.getElementById('typeToggleLuma').style.background === 'var(--accent)' ? 'luma' : 'custom';
+  var slug = '';
+  var customUrl = '';
+  if(linkType === 'luma'){
+    slug = document.getElementById('f_slug').value.trim().replace(/https?:\/\/(luma\.com|lu\.ma)\//,'').split('?')[0];
+    if(!slug){ showMsg('publishMsg','err','Luma slug is required'); return; }
+  } else {
+    customUrl = document.getElementById('f_custom_url').value.trim();
+    if(!customUrl){ showMsg('publishMsg','err','Event URL is required'); return; }
+    if(!/^https?:\/\//.test(customUrl)){ showMsg('publishMsg','err','URL must start with https://'); return; }
+    slug = customUrl.replace(/https?:\/\/[^/]+\//,'').replace(/[^a-z0-9]/gi,'-').slice(0,30) || 'event';
+  }
+  var name  = document.getElementById('f_name').value.trim();
+  var date  = document.getElementById('f_date').value;
+
+  if(!name){ showMsg('publishMsg','err','Event name is required'); return; }
+  if(!date){ showMsg('publishMsg','err','Date is required'); return; }
+
+  var ev = {
+    slug:  slug,
+    customUrl: customUrl,
+    name:  name,
+    host:  document.getElementById('f_host').value.trim(),
+    date:  date,
+    time:  document.getElementById('f_time').value || '12:00',
+    venue: document.getElementById('f_venue').value.trim() || 'Cannes',
+    lat:   document.getElementById('f_lat').value.trim(),
+    lng:   document.getElementById('f_lng').value.trim(),
+    desc:  document.getElementById('f_desc').value.trim(),
+    tag:   document.getElementById('f_tag').value
+  };
+
+  document.getElementById('publishBtn').disabled = true;
+  showProgress(true);
+
+  try {
+    setStep(1,'active');
+    var file = await ghGet(cfg);
+    var html = decodeURIComponent(escape(atob(file.content.replace(/\s/g,''))));
+    setStep(1,'done'); setStep(2,'active');
+
+    var line = makeEventLine(ev);
+    var updated = insertEventIntoHTML(html, line);
+    setStep(2,'done'); setStep(3,'active');
+
+    await ghPut(cfg, file.sha, updated, 'Add event: '+ev.name);
+    setStep(3,'done'); setStep(4,'active');
+
+    // Wait for Vercel deploy
+    await sleep(28000);
+    setStep(4,'done');
+
+    showProgress(false);
+    showMsg('publishMsg','ok','✓ '+ev.name+' is now live!');
+    clearForm();
+    loadEventList();
+
+  } catch(err){
+    showProgress(false);
+    showMsg('publishMsg','err','✗ '+err.message);
+  }
+
+  document.getElementById('publishBtn').disabled = false;
+}
+
+/* ─── DELETE ──────────────────────────────────────────────────────────── */
+async function deleteEvent(slug, name){
+  if(!confirm('Remove "'+name+'" from the site?')) return;
+
+  var cfg = getConfig();
+  if(!cfg.user || !cfg.token){ alert('Set up GitHub settings first'); return; }
+
+  showProgress(true);
+  try {
+    setStep(1,'active');
+    var file = await ghGet(cfg);
+    var html = decodeURIComponent(escape(atob(file.content.replace(/\s/g,''))));
+    setStep(1,'done'); setStep(2,'active');
+
+    var updated = removeEventFromHTML(html, slug);
+    setStep(2,'done'); setStep(3,'active');
+
+    await ghPut(cfg, file.sha, updated, 'Remove event: '+name);
+    setStep(3,'done'); setStep(4,'active');
+
+    await sleep(28000);
+    setStep(4,'done');
+
+    showProgress(false);
+    loadEventList();
+
+  } catch(err){
+    showProgress(false);
+    alert('Error: '+err.message);
+  }
+}
+
+/* ─── EVENT LIST ──────────────────────────────────────────────────────── */
+async function loadEventList(){
+  var cfg = getConfig();
+  var list = document.getElementById('eventList');
+  if(!cfg.user || !cfg.token){
+    list.innerHTML = '<div class="empty-state">Configure GitHub settings above to see current events.</div>';
+    return;
+  }
+  list.innerHTML = '<div class="empty-state">Loading from GitHub...</div>';
+  try {
+    var file = await ghGet(cfg);
+    var html = decodeURIComponent(escape(atob(file.content.replace(/\s/g,''))));
+    var events = parseEventsFromHTML(html);
+    if(!events.length){
+      list.innerHTML='<div class="empty-state">No events found.</div>';
+      return;
+    }
+    var TAG_COLORS = {Builder:'#7b61ff',Investor:'#0f766e',Fitness:'#9333ea',Marketing:'#15803d',Social:'#db2777',General:'#0369a1'};
+    var TAG_BG = {Builder:'#f5f3ff',Investor:'#f0fdfa',Fitness:'#faf5ff',Marketing:'#f0fdf4',Social:'#fdf2f8',General:'#f0f9ff'};
+    list.innerHTML = events.map(function(e){
+      var slug = e.url.replace('https://luma.com/','');
+      var dateStr = e.start.split('T')[0];
+      var timeStr = e.start.split('T')[1]||'';
+      var tagHtml = e.tag
+        ? '<span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:'+(TAG_BG[e.tag]||'#f0f9ff')+';color:'+(TAG_COLORS[e.tag]||'#0369a1')+';">'+e.tag+'</span>'
+        : '<span style="padding:2px 8px;border-radius:4px;font-size:10px;color:#6b7280;background:#1e2a38;">auto</span>';
+      return '<div class="event-item" style="grid-template-columns:1fr auto auto auto;">'
+        +'<div><div class="ei-name">'+e.name+'</div><div class="ei-meta">'+dateStr+(timeStr?' · '+timeStr:'')+' · '+e.venue+'</div></div>'
+        +tagHtml
+        +'<span class="ei-slug">'+slug+'</span>'
+        +'<button class="ei-del" onclick="deleteEvent(\''+slug+'\',\''+e.name.replace(/'/g,"\\'")+'\')" title="Remove event">&#10005;</button>'
+        +'</div>';
+    }).join('');
+  } catch(err){
+    list.innerHTML='<div class="empty-state" style="color:var(--red);">Could not load: '+err.message+'</div>';
+  }
+}
+
+/* ─── UI HELPERS ──────────────────────────────────────────────────────── */
+function clearForm(){
+  ['f_slug','f_custom_url','f_name','f_host','f_venue','f_lat','f_lng','f_desc','f_tag'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('f_date').value='2026-04-01';
+  document.getElementById('f_time').value='18:00';
+  var msg=document.getElementById('publishMsg');
+  msg.className='status-msg'; msg.style.display='none';
+}
+
+function showMsg(id, type, text){
+  var el=document.getElementById(id);
+  el.className='status-msg '+type;
+  el.textContent=text;
+  el.style.display='block';
+  if(type==='ok') setTimeout(function(){el.style.display='none';el.className='status-msg';},5000);
+}
+
+function showProgress(show){
+  var ov=document.getElementById('progressOverlay');
+  ov.className=show?'show':'';
+  if(show){
+    ['ps1','ps2','ps3','ps4'].forEach(function(id){
+      document.getElementById(id).className='ps';
+    });
+  }
+}
+
+function setStep(n, state){
+  var el=document.getElementById('ps'+n);
+  el.className='ps '+state;
+}
+
+function sleep(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
+</script>
+</body>
+</html>
