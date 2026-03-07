@@ -232,6 +232,19 @@ td:first-child { padding-left: 0; }
     </div>
   </div>
 
+  <!-- SHARE BAR -->
+  <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);">
+    <span style="font-size:12px;color:var(--text3);flex-shrink:0;">Share the event list:</span>
+    <a href="https://twitter.com/intent/tweet?text=Here%27s%20the%20complete%20EthCC%5B9%5D%20side%20event%20list%20curated%20by%20%40sidechain_so%20%F0%9F%91%87%0A%0Ahttps%3A%2F%2Fethcc-side-event-list.vercel.app" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;font-size:11px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#000';this.style.color='#fff';this.style.borderColor='#000'" onmouseout="this.style.background='var(--bg2)';this.style.color='var(--text2)';this.style.borderColor='var(--border2)'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.738l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Share on X
+    </a>
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fethcc-side-event-list.vercel.app&summary=Here%27s%20the%20complete%20EthCC%5B9%5D%20side%20event%20list%20curated%20by%20%40sidechain_so" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;font-size:11px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#0a66c2';this.style.color='#fff';this.style.borderColor='#0a66c2'" onmouseout="this.style.background='var(--bg2)';this.style.color='var(--text2)';this.style.borderColor='var(--border2)'">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Share on LinkedIn
+    </a>
+  </div>
+
   <!-- DAY TABS -->
   <div class="day-tabs" id="dayTabs"></div>
 
@@ -255,9 +268,6 @@ td:first-child { padding-left: 0; }
 
   <!-- MOBILE CARD LIST -->
   <div id="cardList" class="card-list"></div>
-
-  <!-- SHARE TOAST -->
-  <div id="shareToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:8px 18px;border-radius:6px;font-size:12px;font-weight:500;opacity:0;transition:all .2s;pointer-events:none;z-index:9999;">Link copied!</div>
 
   <!-- HIRING OFFER (expires Apr 2 2026) -->
   <div id="hiringOffer" style="margin-top:32px;padding:28px 32px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:12px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;">
@@ -486,7 +496,6 @@ function renderTable(){
     byDay[e.day].push(e);
   });
 
-  var shareSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>';
   var html='', cardHtml='';
   order.forEach(function(day){
     var evs=byDay[day];
@@ -499,7 +508,6 @@ function renderTable(){
     evs.forEach(function(e){
       var icon = EVENT_ICONS[e.tags&&e.tags[0]]||'✦';
       var tagsHtml = '<div style="display:flex;gap:3px;flex-wrap:wrap;">'+(e.tags||['General']).map(function(t){return '<span class="tag tag-'+t+'">'+t+'</span>';}).join('')+'</div>';
-      var shareBtn = '<button class="share-btn" onclick="event.stopPropagation();shareEvent(\''+e.id+'\')" title="Copy link">'+shareSvg+'</button>';
       html+='<tr id="ev-'+e.id+'" onclick="window.open(\''+e.url+'\',\'_blank\')">'
         +'<td><div class="td-name">'
         +'<div class="td-icon" style="background:var(--bg2);">'+icon+'</div>'
@@ -511,7 +519,7 @@ function renderTable(){
         +'<td class="td-time">'+fmtTime(e.start)+'</td>'
         +'<td class="td-venue">'+e.venue+'</td>'
         +'<td class="td-host">'+e.host+'</td>'
-        +'<td><div style="display:flex;align-items:center;gap:5px;"><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a>'+shareBtn+'</div></td>'
+        +'<td><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a></td>'
         +'</tr>';
       cardHtml+='<div id="evc-'+e.id+'" class="event-card" onclick="window.open(\''+e.url+'\',\'_blank\')">'
         +'<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;">'
@@ -520,8 +528,7 @@ function renderTable(){
         +(e.host?'<div class="event-card-host">'+e.host+'</div>':'')+'</div></div>'
         +tagsHtml
         +'<div class="event-card-meta">'+fmtDate(e.start)+' &middot; '+fmtTime(e.start)+(e.venue?' &middot; '+e.venue:'')+'</div>'
-        +'<div class="event-card-footer"><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a>'
-        +'<button class="share-btn" onclick="event.stopPropagation();shareEvent(\''+e.id+'\')" title="Copy link">'+shareSvg+'</button></div>'
+        +'<div class="event-card-footer"><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a></div>'
         +'</div>';
     });
   });
@@ -549,24 +556,6 @@ function buildDayTabs(){
     });
     wrap.appendChild(btn);
   });
-}
-
-/* ─── SHARE ──────────────────────────────────────────────────────────── */
-function shareEvent(id){
-  var url = window.location.origin + window.location.pathname + '?event=' + id;
-  var toast = document.getElementById('shareToast');
-  function showToast(){
-    toast.style.opacity='1'; toast.style.transform='translateX(-50%) translateY(0)';
-    setTimeout(function(){ toast.style.opacity='0'; toast.style.transform='translateX(-50%) translateY(8px)'; },2000);
-  }
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(url).then(showToast).catch(function(){fallbackCopy(url);showToast();});
-  } else { fallbackCopy(url); showToast(); }
-}
-function fallbackCopy(text){
-  var ta=document.createElement('textarea'); ta.value=text;
-  ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
-  document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
 }
 
 /* ─── FILTER ─────────────────────────────────────────────────────────── */
