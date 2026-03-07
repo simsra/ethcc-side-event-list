@@ -142,6 +142,19 @@ td:first-child { padding-left: 0; }
 .btn-secondary { padding: 10px 20px; background: transparent; color: var(--text2); font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 400; border: 1px solid var(--border2); border-radius: 6px; text-decoration: none; text-align: center; transition: all .15s; white-space: nowrap; display: block; }
 .btn-secondary:hover { border-color: var(--text); color: var(--text); }
 
+/* ── SHARE BTN ── */
+.share-btn { background: none; border: none; cursor: pointer; padding: 4px 5px; color: var(--text3); border-radius: 4px; display: inline-flex; align-items: center; transition: all .12s; flex-shrink: 0; }
+.share-btn:hover { color: var(--accent); background: var(--accent-bg); }
+
+/* ── MOBILE CARDS ── */
+.card-list { display: none; }
+.event-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: background .1s; }
+.event-card:hover { background: var(--bg2); }
+.event-card-name { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.3; }
+.event-card-host { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.event-card-meta { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text2); margin: 8px 0 10px; }
+.event-card-footer { display: flex; align-items: center; justify-content: space-between; }
+
 /* ── FOOTER ── */
 .footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .footer-left { font-size: 12px; color: var(--text3); }
@@ -156,8 +169,8 @@ td:first-child { padding-left: 0; }
   .hero { padding: 36px 0 28px; }
   .promo-section { grid-template-columns: 1fr; padding: 24px; }
   .promo-btns { flex-direction: row; }
-  th.hide-mobile, td.hide-mobile { display: none; }
-  .td-name-desc { display: none; }
+  .table-wrap { display: none; }
+  .card-list { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 }
 </style>
 </head>
@@ -239,6 +252,12 @@ td:first-child { padding-left: 0; }
       <tbody id="tableBody"></tbody>
     </table>
   </div>
+
+  <!-- MOBILE CARD LIST -->
+  <div id="cardList" class="card-list"></div>
+
+  <!-- SHARE TOAST -->
+  <div id="shareToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:8px 18px;border-radius:6px;font-size:12px;font-weight:500;opacity:0;transition:all .2s;pointer-events:none;z-index:9999;">Link copied!</div>
 
   <!-- HIRING OFFER (expires Apr 2 2026) -->
   <div id="hiringOffer" style="margin-top:32px;padding:28px 32px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:12px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;">
@@ -467,33 +486,47 @@ function renderTable(){
     byDay[e.day].push(e);
   });
 
-  var html='';
+  var shareSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>';
+  var html='', cardHtml='';
   order.forEach(function(day){
     var evs=byDay[day];
     // Day group header row
     if(activeDay==='all'){
-      html+='<tr class="day-group-row"><td colspan="7"><div class="day-group-label">'
-        +(DAY_EMOJIS[day]||'')+'&nbsp;'+( DAY_NAMES[day]||day)+' &mdash; '+evs.length+' event'+(evs.length!==1?'s':'')
-        +'</div></td></tr>';
+      var dayLabel=(DAY_EMOJIS[day]||'')+'&nbsp;'+(DAY_NAMES[day]||day)+' &mdash; '+evs.length+' event'+(evs.length!==1?'s':'');
+      html+='<tr class="day-group-row"><td colspan="7"><div class="day-group-label">'+dayLabel+'</div></td></tr>';
+      cardHtml+='<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:10px 0 4px;border-top:1px solid var(--border);">'+dayLabel+'</div>';
     }
     evs.forEach(function(e){
       var icon = EVENT_ICONS[e.tags&&e.tags[0]]||'✦';
-      html+='<tr onclick="window.open(\''+e.url+'\',\'_blank\')">'
+      var tagsHtml = '<div style="display:flex;gap:3px;flex-wrap:wrap;">'+(e.tags||['General']).map(function(t){return '<span class="tag tag-'+t+'">'+t+'</span>';}).join('')+'</div>';
+      var shareBtn = '<button class="share-btn" onclick="event.stopPropagation();shareEvent(\''+e.id+'\')" title="Copy link">'+shareSvg+'</button>';
+      html+='<tr id="ev-'+e.id+'" onclick="window.open(\''+e.url+'\',\'_blank\')">'
         +'<td><div class="td-name">'
         +'<div class="td-icon" style="background:var(--bg2);">'+icon+'</div>'
         +'<div><div class="td-name-text">'+e.name+'</div>'
         +'<div class="td-name-desc">'+e.desc+'</div></div>'
         +'</div></td>'
-        +'<td><div style="display:flex;gap:3px;flex-wrap:wrap;">'+(e.tags||['General']).map(function(t){return '<span class="tag tag-'+t+'">'+t+'</span>';}).join('')+'</div></td>'
-        +'<td class="td-date hide-mobile">'+fmtDate(e.start)+'</td>'
-        +'<td class="td-time hide-mobile">'+fmtTime(e.start)+'</td>'
-        +'<td class="td-venue hide-mobile">'+e.venue+'</td>'
-        +'<td class="td-host hide-mobile">'+e.host+'</td>'
-        +'<td><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a></td>'
+        +'<td>'+tagsHtml+'</td>'
+        +'<td class="td-date">'+fmtDate(e.start)+'</td>'
+        +'<td class="td-time">'+fmtTime(e.start)+'</td>'
+        +'<td class="td-venue">'+e.venue+'</td>'
+        +'<td class="td-host">'+e.host+'</td>'
+        +'<td><div style="display:flex;align-items:center;gap:5px;"><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a>'+shareBtn+'</div></td>'
         +'</tr>';
+      cardHtml+='<div id="evc-'+e.id+'" class="event-card" onclick="window.open(\''+e.url+'\',\'_blank\')">'
+        +'<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;">'
+        +'<div class="td-icon" style="background:var(--bg2);flex-shrink:0;">'+icon+'</div>'
+        +'<div style="flex:1;min-width:0;"><div class="event-card-name">'+e.name+'</div>'
+        +(e.host?'<div class="event-card-host">'+e.host+'</div>':'')+'</div></div>'
+        +tagsHtml
+        +'<div class="event-card-meta">'+fmtDate(e.start)+' &middot; '+fmtTime(e.start)+(e.venue?' &middot; '+e.venue:'')+'</div>'
+        +'<div class="event-card-footer"><a class="rsvp-link" href="'+e.url+'" target="_blank" onclick="event.stopPropagation()">RSVP &rarr;</a>'
+        +'<button class="share-btn" onclick="event.stopPropagation();shareEvent(\''+e.id+'\')" title="Copy link">'+shareSvg+'</button></div>'
+        +'</div>';
     });
   });
   tbody.innerHTML = html;
+  document.getElementById('cardList').innerHTML = cardHtml;
 }
 
 /* ─── DAY TABS ───────────────────────────────────────────────────────── */
@@ -518,6 +551,24 @@ function buildDayTabs(){
   });
 }
 
+/* ─── SHARE ──────────────────────────────────────────────────────────── */
+function shareEvent(id){
+  var url = window.location.origin + window.location.pathname + '?event=' + id;
+  var toast = document.getElementById('shareToast');
+  function showToast(){
+    toast.style.opacity='1'; toast.style.transform='translateX(-50%) translateY(0)';
+    setTimeout(function(){ toast.style.opacity='0'; toast.style.transform='translateX(-50%) translateY(8px)'; },2000);
+  }
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(showToast).catch(function(){fallbackCopy(url);showToast();});
+  } else { fallbackCopy(url); showToast(); }
+}
+function fallbackCopy(text){
+  var ta=document.createElement('textarea'); ta.value=text;
+  ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+}
+
 /* ─── FILTER ─────────────────────────────────────────────────────────── */
 function apply(){
   filtered = EVENTS.filter(function(e){
@@ -527,6 +578,13 @@ function apply(){
   });
   filtered.sort(function(a,b){return a.start<b.start?-1:1;});
   renderTable();
+  // Sync filters to URL
+  var p=new URLSearchParams();
+  if(activeRole!=='all') p.set('role',activeRole);
+  if(activeDay!=='all') p.set('day',activeDay);
+  if(activeTime!=='all') p.set('time',activeTime);
+  var q=p.toString();
+  history.replaceState(null,'',window.location.pathname+(q?'?'+q:''));
 }
 
 /* ─── BOOT ───────────────────────────────────────────────────────────── */
@@ -550,8 +608,24 @@ document.addEventListener('DOMContentLoaded',function(){
     });
   });
 
+  // Read URL params
+  var params=new URLSearchParams(window.location.search);
+  var pEvent=params.get('event'), pRole=params.get('role'), pDay=params.get('day'), pTime=params.get('time');
+  if(pRole){ activeRole=pRole; document.querySelectorAll('[data-role]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-role')===pRole);}); }
+  if(pTime){ activeTime=pTime; document.querySelectorAll('[data-time]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-time')===pTime);}); }
+  if(pDay){ activeDay=pDay; }
+
   buildDayTabs();
   apply();
+
+  // Scroll to & highlight shared event
+  if(pEvent){
+    setTimeout(function(){
+      var el=document.getElementById('ev-'+pEvent)||document.getElementById('evc-'+pEvent);
+      if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.background='var(--accent-bg)'; setTimeout(function(){el.style.background='';},2500); }
+    },150);
+  }
+
   document.getElementById('walletBtn').addEventListener('click', copyWallet);
   // Hide hiring offer after EthCC ends (Apr 2 2026 midnight CET)
   if(new Date() > new Date('2026-04-03T00:00:00+02:00')){
