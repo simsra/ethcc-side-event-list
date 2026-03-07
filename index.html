@@ -270,6 +270,9 @@ td:first-child { padding-left: 0; }
   <!-- MOBILE CARD LIST -->
   <div id="cardList" class="card-list"></div>
 
+  <!-- SPONSORED SLOT — update SPONSOR object below to activate -->
+  <div id="sponsoredSlot" style="display:none;margin-top:32px;"></div>
+
   <!-- HIRING OFFER (expires Apr 2 2026) -->
   <div id="hiringOffer" style="margin-top:32px;padding:28px 32px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:12px;">
     <div style="margin-bottom:20px;">
@@ -530,6 +533,39 @@ var RAW = [
   {id:"w3st-", name:"W3ST - Web3 Security Tools Seminar", host:"W3ST", start:"2026-03-31T14:00", venue:"Cannes", lat:43.5513, lng:7.0170, url:"https://seceureka.com/w3st/", tags:"Builder", desc:"W3ST - Web3 Security Tools Seminar"},
   {id:"r71low6s", name:"SunDAO: Investors & Builders Mixer", host:"SunDAO Ventures", start:"2026-03-31T17:00", venue:"Cannes", lat:43.5513, lng:7.0170, url:"https://luma.com/r71low6s", tags:"Social", desc:"SunDAO: Investors & Builders Mixer"},
 ];
+
+/* ─── SPONSOR ─────────────────────────────────────────────────────────
+   Set active: true and fill in details to show the sponsored slot.
+   Set active: false to hide it.
+──────────────────────────────────────────────────────────────────────── */
+var SPONSOR = {
+  active: false,
+  logo: '',           // URL to sponsor logo image (optional)
+  name: '',           // e.g. 'Acme Protocol'
+  eyebrow: '',        // e.g. 'Presenting sponsor'
+  headline: '',       // e.g. 'The fastest ZK rollup at EthCC'
+  desc: '',           // 1-2 sentence description
+  cta: '',            // CTA button text, e.g. 'Learn more'
+  url: ''             // CTA link
+};
+
+(function renderSponsor(){
+  if(!SPONSOR.active) return;
+  var el = document.getElementById('sponsoredSlot');
+  el.style.display = 'block';
+  el.innerHTML =
+    '<div style="padding:24px 28px;border:1px solid var(--border2);border-radius:12px;background:var(--bg2);position:relative;">'
+    +'<div style="position:absolute;top:12px;right:14px;font-family:\'Geist Mono\',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--border);border-radius:4px;padding:2px 6px;">Sponsored</div>'
+    +'<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">'
+    +(SPONSOR.logo ? '<img src="'+SPONSOR.logo+'" style="height:36px;object-fit:contain;flex-shrink:0;" alt="'+SPONSOR.name+'">' : '')
+    +'<div style="flex:1;min-width:0;">'
+    +(SPONSOR.eyebrow ? '<div style="font-family:\'Geist Mono\',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">'+SPONSOR.eyebrow+'</div>' : '')
+    +'<div style="font-family:\'Instrument Serif\',serif;font-size:20px;font-weight:400;color:var(--text);line-height:1.2;margin-bottom:4px;">'+SPONSOR.headline+'</div>'
+    +(SPONSOR.desc ? '<p style="font-size:12px;color:var(--text2);line-height:1.6;margin:0;">'+SPONSOR.desc+'</p>' : '')
+    +'</div>'
+    +(SPONSOR.cta && SPONSOR.url ? '<a href="'+SPONSOR.url+'" target="_blank" style="display:inline-flex;align-items:center;padding:9px 18px;background:var(--text);color:var(--bg);border-radius:7px;font-family:\'Geist\',sans-serif;font-size:12px;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.opacity=\'.8\'" onmouseout="this.style.opacity=\'1\'">'+SPONSOR.cta+' &rarr;</a>' : '')
+    +'</div></div>';
+})();
 
 var DAY_NAMES  = {'03-27':'Fri 27 Mar','03-28':'Sat 28 Mar','03-29':'Sun 29 Mar','03-30':'Mon 30 Mar','03-31':'Tue 31 Mar','04-01':'Wed 1 Apr','04-02':'Thu 2 Apr','04-03':'Fri 3 Apr'};
 var DAYS_ORDER = ['all','03-27','03-28','03-29','03-30','03-31','04-01','04-02','04-03'];
