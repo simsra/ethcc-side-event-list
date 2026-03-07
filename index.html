@@ -270,16 +270,37 @@ td:first-child { padding-left: 0; }
   <div id="cardList" class="card-list"></div>
 
   <!-- HIRING OFFER (expires Apr 2 2026) -->
-  <div id="hiringOffer" style="margin-top:32px;padding:28px 32px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:12px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;">
-    <div>
+  <div id="hiringOffer" style="margin-top:32px;padding:28px 32px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:12px;">
+    <div style="margin-bottom:20px;">
       <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#0369a1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Free for companies attending EthCC</div>
       <div style="font-family:'Instrument Serif',serif;font-size:26px;font-weight:400;line-height:1.15;color:var(--text);margin-bottom:8px;">Hiring and heading to EthCC?</div>
-      <p style="font-size:13px;color:var(--text2);line-height:1.65;max-width:480px;font-weight:300;">Send us your open role on Telegram before you arrive. We'll send you 3 pre-vetted web3 candidates — free.<br>No catch. Just a chance to show you what Sidechain does.</p>
+      <p style="font-size:13px;color:var(--text2);line-height:1.65;max-width:480px;font-weight:300;">Tell us your open role before you arrive. We'll send you 3 pre-vetted web3 candidates — free. No catch. Just a chance to show you what Sidechain does.</p>
     </div>
-    <a href="https://t.me/sims0x" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#2563eb;color:#fff;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/></svg>
-      Message us on Telegram — companies only
-    </a>
+    <div id="hiringForm" style="display:flex;flex-direction:column;gap:12px;max-width:480px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:11px;color:#0369a1;display:block;margin-bottom:4px;">Your Name *</label>
+          <input id="hr_name" type="text" placeholder="Alex Smith" style="width:100%;padding:9px 12px;border:1px solid #bfdbfe;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;background:#fff;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#bfdbfe'"/>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#0369a1;display:block;margin-bottom:4px;">Company *</label>
+          <input id="hr_company" type="text" placeholder="Acme Protocol" style="width:100%;padding:9px 12px;border:1px solid #bfdbfe;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;background:#fff;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#bfdbfe'"/>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;color:#0369a1;display:block;margin-bottom:4px;">Role you're hiring for *</label>
+        <input id="hr_role" type="text" placeholder="e.g. Senior Solidity Engineer" style="width:100%;padding:9px 12px;border:1px solid #bfdbfe;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;background:#fff;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#bfdbfe'"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:#0369a1;display:block;margin-bottom:4px;">Your email or Telegram *</label>
+        <input id="hr_contact" type="text" placeholder="you@company.com or @handle" style="width:100%;padding:9px 12px;border:1px solid #bfdbfe;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;background:#fff;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#bfdbfe'"/>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="submitHiring()" style="padding:10px 22px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Get 3 free candidates &rarr;</button>
+        <span id="hr_err" style="font-size:12px;color:#ef4444;display:none;">Please fill in all fields.</span>
+        <span id="hr_ok" style="font-size:12px;color:#15803d;display:none;">✓ Received! We'll be in touch before EthCC.</span>
+      </div>
+    </div>
   </div>
 
 
@@ -651,6 +672,34 @@ function copyWallet(){
     document.getElementById('walletBtn').style.borderColor = '';
   }, 2000);
 }
+/* ── HIRING FORM ── */
+function submitHiring(){
+  var name = document.getElementById('hr_name').value.trim();
+  var company = document.getElementById('hr_company').value.trim();
+  var role = document.getElementById('hr_role').value.trim();
+  var contact = document.getElementById('hr_contact').value.trim();
+  var err = document.getElementById('hr_err');
+  var ok = document.getElementById('hr_ok');
+  if(!name||!company||!role||!contact){ err.style.display='inline'; ok.style.display='none'; return; }
+  err.style.display='none';
+  fetch('https://formsubmit.co/ajax/simon@sidechain.so', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify({
+      _subject: 'EthCC Hiring Enquiry — ' + company,
+      Name: name,
+      Company: company,
+      'Role hiring for': role,
+      'Contact': contact
+    })
+  });
+  ok.style.display='inline';
+  document.getElementById('hr_name').value='';
+  document.getElementById('hr_company').value='';
+  document.getElementById('hr_role').value='';
+  document.getElementById('hr_contact').value='';
+}
+
 /* ── BOOKING MODAL ── */
 function openBooking(){
   document.getElementById('bookingModal').style.display='flex';
