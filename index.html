@@ -324,6 +324,41 @@ td:first-child { padding-left: 0; }
     </div>
   </div>
 
+  <!-- PROMOTE MODAL -->
+  <div id="promoteModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:min(460px,100%);box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;">
+      <button onclick="closePromote()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;color:#9ca3af;cursor:pointer;">&#10005;</button>
+      <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#0369a1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">EthCC[9] · Cannes 2026</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:6px;">Promote on this page</div>
+      <p style="font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.6;">Tell us what you'd like to promote. We'll be in touch with details.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Your Name *</label>
+            <input id="pr_name" type="text" placeholder="Alex Smith" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+          </div>
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Company *</label>
+            <input id="pr_company" type="text" placeholder="Acme Protocol" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">What do you want to promote? *</label>
+          <textarea id="pr_what" placeholder="e.g. Our new protocol launch at EthCC, event, product..." style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;resize:none;height:72px;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Your email *</label>
+          <input id="pr_email" type="email" placeholder="you@company.com" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="submitPromote()" style="padding:11px 22px;background:#1a1a18;color:#fff;border:none;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Send enquiry &rarr;</button>
+        <span id="pr_err" style="font-size:12px;color:#ef4444;display:none;">Please fill in all fields.</span>
+        <span id="pr_ok" style="font-size:12px;color:#15803d;display:none;">✓ Received! We'll be in touch soon.</span>
+      </div>
+    </div>
+  </div>
+
   <!-- SUBMIT EVENT MODAL -->
   <div id="submitEventModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
     <div style="background:#fff;border-radius:16px;padding:32px;width:min(500px,100%);box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;max-height:90vh;overflow-y:auto;">
@@ -462,7 +497,7 @@ td:first-child { padding-left: 0; }
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         </button>
       </div>
-      <a href="mailto:simon@sidechain.so?subject=Promote%20on%20EthCC%20Side%20Event%20List&body=Hi%2C%20I%27d%20like%20to%20enquire%20about%20promoting%20on%20the%20EthCC%20side%20event%20list." style="font-size:12px;color:var(--text3);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">Promote here &rarr;</a>
+      <button onclick="openPromote()" style="background:none;border:none;padding:0;font-size:12px;color:var(--text3);cursor:pointer;font-family:'Geist',sans-serif;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">Promote here &rarr;</button>
       </div>
     </div>
     <div class="footer-right">
@@ -772,6 +807,29 @@ function copyWallet(){
     document.getElementById('walletBtn').style.borderColor = '';
   }, 2000);
 }
+/* ── PROMOTE MODAL ── */
+function openPromote(){ document.getElementById('promoteModal').style.display='flex'; document.body.style.overflow='hidden'; }
+function closePromote(){ document.getElementById('promoteModal').style.display='none'; document.body.style.overflow=''; }
+function submitPromote(){
+  var name = document.getElementById('pr_name').value.trim();
+  var company = document.getElementById('pr_company').value.trim();
+  var what = document.getElementById('pr_what').value.trim();
+  var email = document.getElementById('pr_email').value.trim();
+  var err = document.getElementById('pr_err'), ok = document.getElementById('pr_ok');
+  if(!name||!company||!what||!email){ err.style.display='inline'; ok.style.display='none'; return; }
+  err.style.display='none';
+  fetch('https://formsubmit.co/ajax/simon@sidechain.so', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body: JSON.stringify({
+      _subject: 'Promote Enquiry — ' + company,
+      Name: name, Company: company, 'What to promote': what, Email: email
+    })
+  });
+  ok.style.display='inline';
+  ['pr_name','pr_company','pr_what','pr_email'].forEach(function(id){ document.getElementById(id).value=''; });
+}
+
 /* ── SUBMIT EVENT MODAL ── */
 function openSubmitEvent(){
   document.getElementById('submitEventModal').style.display='flex';
