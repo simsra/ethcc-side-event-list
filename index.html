@@ -191,6 +191,7 @@ td:first-child { padding-left: 0; }
       See the latest on EthCC on <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-left:1px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.738l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
     </a>
     <span class="hero-stat" style="font-size:11px;"><span class="live-dot"></span>&nbsp;Live &middot; Cannes</span>
+    <button onclick="openSubmitEvent()" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--text);color:var(--bg);border:none;border-radius:6px;font-family:'Geist',sans-serif;font-size:11px;font-weight:500;cursor:pointer;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">+ Submit event</button>
   </div>
 </div>
 
@@ -317,6 +318,66 @@ td:first-child { padding-left: 0; }
     </div>
     <div class="promo-btns">
       <button onclick="openBooking()" class="btn-primary" style="cursor:pointer;border:none;">Book your $50 session</button>
+    </div>
+  </div>
+
+  <!-- SUBMIT EVENT MODAL -->
+  <div id="submitEventModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:min(500px,100%);box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;max-height:90vh;overflow-y:auto;">
+      <button onclick="closeSubmitEvent()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;color:#9ca3af;cursor:pointer;">&#10005;</button>
+      <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#0369a1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">EthCC[9] · Cannes 2026</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:6px;">Submit your event</div>
+      <p style="font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.6;">We review all submissions and add qualifying events within 24 hours.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Event Name *</label>
+            <input id="se_name" type="text" placeholder="e.g. DeFi Founders Dinner" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+          </div>
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Host / Organiser *</label>
+            <input id="se_host" type="text" placeholder="e.g. Acme Protocol" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Date *</label>
+            <input id="se_date" type="date" min="2026-03-27" max="2026-04-04" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+          </div>
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Start Time *</label>
+            <input id="se_time" type="time" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Venue</label>
+          <input id="se_venue" type="text" placeholder="e.g. JW Marriott, Cannes" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">RSVP / Event URL *</label>
+          <input id="se_url" type="url" placeholder="https://lu.ma/..." style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Type *</label>
+          <select id="se_tag" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;background:#fff;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'">
+            <option value="">Select a type</option>
+            <option value="Builder">Builder</option>
+            <option value="Investor">Investor</option>
+            <option value="Social">Social</option>
+            <option value="Fitness">Fitness</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Your email or Telegram (so we can confirm)</label>
+          <input id="se_contact" type="text" placeholder="you@company.com or @handle" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="submitEvent()" style="padding:11px 22px;background:#1a1a18;color:#fff;border:none;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Submit for review &rarr;</button>
+        <span id="se_err" style="font-size:12px;color:#ef4444;display:none;">Please fill in all required fields.</span>
+        <span id="se_ok" style="font-size:12px;color:#15803d;display:none;">✓ Submitted! We'll review and add it soon.</span>
+      </div>
     </div>
   </div>
 
@@ -672,6 +733,49 @@ function copyWallet(){
     document.getElementById('walletBtn').style.borderColor = '';
   }, 2000);
 }
+/* ── SUBMIT EVENT MODAL ── */
+function openSubmitEvent(){
+  document.getElementById('submitEventModal').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeSubmitEvent(){
+  document.getElementById('submitEventModal').style.display='none';
+  document.body.style.overflow='';
+}
+function submitEvent(){
+  var name = document.getElementById('se_name').value.trim();
+  var host = document.getElementById('se_host').value.trim();
+  var date = document.getElementById('se_date').value.trim();
+  var time = document.getElementById('se_time').value.trim();
+  var venue = document.getElementById('se_venue').value.trim();
+  var url = document.getElementById('se_url').value.trim();
+  var tag = document.getElementById('se_tag').value.trim();
+  var contact = document.getElementById('se_contact').value.trim();
+  var err = document.getElementById('se_err');
+  var ok = document.getElementById('se_ok');
+  if(!name||!host||!date||!time||!url||!tag){ err.style.display='inline'; ok.style.display='none'; return; }
+  err.style.display='none';
+  fetch('https://formsubmit.co/ajax/simon@sidechain.so', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify({
+      _subject: 'New Event Submission — ' + name,
+      'Event Name': name,
+      'Host': host,
+      'Date': date,
+      'Time': time,
+      'Venue': venue || 'Not specified',
+      'URL': url,
+      'Type': tag,
+      'Contact': contact || 'Not provided'
+    })
+  });
+  ok.style.display='inline';
+  err.style.display='none';
+  ['se_name','se_host','se_date','se_time','se_venue','se_url','se_contact'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('se_tag').value='';
+}
+
 /* ── HIRING FORM ── */
 function submitHiring(){
   var name = document.getElementById('hr_name').value.trim();
