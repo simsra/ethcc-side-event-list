@@ -202,13 +202,13 @@ td:first-child { padding-left: 0; }
     <h1>EthCC[9] Side Events<br><em>Curated by Sidechain</em></h1>
     <p class="hero-desc">The complete guide to side events happening around EthCC[9] in Cannes. Filtered by role so you find what's relevant, fast.</p>
     <div class="hero-meta">
-      <div class="hero-stat"><strong id="totalCount">11</strong>&nbsp;events listed</div>
+      <div class="hero-stat"><strong id="totalCount">0</strong>&nbsp;events listed</div>
       <div class="hero-stat-sep"></div>
-      <div class="hero-stat"><strong>6</strong>&nbsp;days</div>
+      <div class="hero-stat"><strong id="totalDays">0</strong>&nbsp;days</div>
       <div class="hero-stat-sep"></div>
       <div class="hero-stat"><strong>Cannes</strong>&nbsp;Riviera</div>
       <div class="hero-stat-sep"></div>
-      <div class="hero-stat">Updated&nbsp;<strong>Mar 2026</strong></div>
+      <div class="hero-stat">Updated&nbsp;<strong id="updatedDate"></strong></div>
     </div>
   </div>
 
@@ -482,6 +482,10 @@ function renderTable(){
   var countEl = document.getElementById('countBadge');
   var totalEl = document.getElementById('totalCount');
   totalEl.textContent = EVENTS.length;
+  var activeDays = DAYS_ORDER.filter(function(d){ return d!=='all' && EVENTS.some(function(e){ return e.day===d; }); }).length;
+  document.getElementById('totalDays').textContent = activeDays;
+  var now = new Date(); var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('updatedDate').textContent = months[now.getMonth()]+' '+now.getFullYear();
   countEl.textContent = filtered.length + ' event' + (filtered.length!==1?'s':'');
 
   if(!filtered.length){
