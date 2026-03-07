@@ -323,6 +323,10 @@ td:first-child { padding-left: 0; }
             <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Telegram Handle *</label>
             <input id="bk_telegram" type="text" placeholder="@username" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
           </div>
+          <div>
+            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">What are you looking for? * <span style="color:#9ca3af">(role, stage, chain, etc.)</span></label>
+            <textarea id="bk_role" placeholder="e.g. Senior Solidity dev role at a DeFi protocol, Series A+" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;resize:none;height:72px;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+          </div>
         </div>
 
         <span id="bk_err" style="font-size:12px;color:#ef4444;display:none;margin-bottom:10px;display:none;">Please fill in all fields.</span>
@@ -664,8 +668,9 @@ function goToPayment(){
   var name = document.getElementById('bk_name').value.trim();
   var wallet = document.getElementById('bk_wallet').value.trim();
   var tg = document.getElementById('bk_telegram').value.trim();
+  var role = document.getElementById('bk_role').value.trim();
   var err = document.getElementById('bk_err');
-  if(!name||!wallet||!tg){ err.style.display='block'; return; }
+  if(!name||!wallet||!tg||!role){ err.style.display='block'; return; }
   err.style.display='none';
   document.getElementById('bk_wallet_confirm').textContent = wallet;
   document.getElementById('step1').style.display='none';
@@ -676,7 +681,23 @@ function backToStep1(){
   document.getElementById('step1').style.display='block';
 }
 function confirmPayment(){
+  var name = document.getElementById('bk_name').value.trim();
+  var wallet = document.getElementById('bk_wallet').value.trim();
   var tg = document.getElementById('bk_telegram').value.trim();
+  var role = document.getElementById('bk_role').value.trim();
+  // Email notification via FormSubmit
+  fetch('https://formsubmit.co/ajax/simon@sidechain.so', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify({
+      _subject: 'EthCC $50 Session — ' + name,
+      Name: name,
+      Telegram: tg,
+      'Wallet (to verify)': wallet,
+      'Looking for': role,
+      _etherscan: 'https://etherscan.io/address/0x6c15AAa1b04EBF05C5fA7857D66384f04c49aD27'
+    })
+  });
   document.getElementById('bk_tg_confirm').textContent = tg;
   document.getElementById('step2').style.display='none';
   document.getElementById('step3').style.display='block';
