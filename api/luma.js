@@ -39,14 +39,14 @@ function extractEvent(entry) {
     const ev = entry.event;
     if (!ev?.name) return null;
 
-    // url field is the RSVP link (can be external), slug derived from luma event api_id
-    // Use entry.api_id (calev-xxx) is not a slug — use ev.url if it's a luma URL, else build from api_id
-    const lumaUrl = ev.url && ev.url.includes('lu.ma') || ev.url && ev.url.includes('luma.com')
+    // ev.url is either a bare luma slug (e.g. "beast_mode") or a full external URL
+    const isExternal = ev.url && ev.url.startsWith('http');
+    const slug = isExternal
+      ? entry.api_id  // calev-xxx — won't match by slug, but name/host matching will catch duplicates
+      : (ev.url || entry.api_id);
+    const url = isExternal
       ? ev.url
-      : null;
-    const slug = lumaUrl
-      ? lumaUrl.replace(/^https?:\/\/(luma\.com|lu\.ma)\//, '').split('?')[0]
-      : entry.api_id; // fallback to calev-xxx
+      : `https://luma.com/${slug}`;
 
     // Parse start time (UTC ISO string — convert to local Paris time for display)
     let date = '', time = '';
@@ -74,9 +74,6 @@ function extractEvent(entry) {
 
     // Host
     const host = ev.host || '';
-
-    // RSVP URL — prefer luma URL, fall back to ev.url
-    const url = lumaUrl || ev.url || `https://luma.com/${slug}`;
 
     return {
       slug,

@@ -837,18 +837,25 @@ async function importFromLuma(){
 
     var events = data.events;
 
-    // Filter out already-listed events — match by slug/URL or by normalised name
+    // Filter out already-listed events — match by slug, name, or host
     var existing = (window._currentEvents||[]);
     var existingSlugs = existing.map(function(e){
       return e.url.toLowerCase().replace(/^https?:\/\/(luma\.com|lu\.ma)\//,'');
     });
-    var existingNames = existing.map(function(e){
-      return e.name.toLowerCase().replace(/[^a-z0-9]/g,'');
-    });
+    // Strip common EthCC suffixes before comparing names
+    function normName(n){
+      return n.toLowerCase()
+        .replace(/[\s|(\[]+ethcc.*$/i,'')  // remove "| EthCC..." or "(EthCC..." suffix
+        .replace(/[^a-z0-9]/g,'')
+        .trim();
+    }
+    var existingNames = existing.map(function(e){ return normName(e.name); });
+    var existingHosts = existing.map(function(e){ return (e.host||'').toLowerCase().trim(); }).filter(Boolean);
     var newEvents = events.filter(function(e){
       var slugMatch = existingSlugs.includes(e.slug.toLowerCase());
-      var nameMatch = existingNames.includes(e.name.toLowerCase().replace(/[^a-z0-9]/g,''));
-      return !slugMatch && !nameMatch;
+      var nameMatch = existingNames.includes(normName(e.name));
+      var hostMatch = e.host && existingHosts.includes(e.host.toLowerCase().trim());
+      return !slugMatch && !nameMatch && !hostMatch;
     });
 
     var skipped = events.length - newEvents.length;
