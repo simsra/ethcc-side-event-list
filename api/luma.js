@@ -1,13 +1,12 @@
 // Vercel Serverless Function — /api/luma.js
 // Fetches and parses events from luma.com/ethcc
-// No API key needed — scrapes the public calendar page
+// No API key needed — parses Schema.org JSON-LD from the public calendar page
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
   try {
-    // Fetch the Luma calendar page
     const response = await fetch('https://luma.com/ethcc', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -33,104 +32,83 @@ export default async function handler(req, res) {
 function parseEvents(html) {
   const events = [];
 
-  // Extract __NEXT_DATA__ JSON which contains all event data
-  const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-
-  if (nextDataMatch) {
-    try {
-      const data = JSON.parse(nextDataMatch[1]);
-      // Drill into Next.js page props to find event entries
-      const entries = findEntries(data);
-      entries.forEach(entry => {
-        const ev = extractEvent(entry);
-        if (ev) events.push(ev);
-      });
-      if (events.length > 0) return events;
-    } catch (e) {
-      // Fall through to regex parsing
-    }
-  }
-
-  // Fallback: regex parse event names + slugs from HTML
-  const nameRe = /href="\/([a-zA-Z0-9_-]+)"[^>]*>\s*<[^>]+>\s*([^<]{5,120})<\/[^>]+>/g;
-  const seen = new Set();
+  // Luma now embeds events as Schema.org JSON-LD
+  const ldRe = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g;
   let m;
-  while ((m = nameRe.exec(html)) !== null) {
-    const slug = m[1];
-    const name = m[2].trim();
-    if (seen.has(slug)) continue;
-    if (['ethcc','discover','signin','signup','pricing'].includes(slug)) continue;
-    if (name.length < 5 || name.length > 120) continue;
-    seen.add(slug);
-    events.push({
-      slug,
-      name,
-      host: '',
-      date: '',
-      time: '',
-      venue: 'Cannes',
-      url: `https://luma.com/${slug}`,
-      desc: ''
-    });
+  while ((m = ldRe.exec(html)) !== null) {
+    try {
+      const data = JSON.parse(m[1]);
+      const items = Array.isArray(data) ? data : [data];
+      for (const item of items) {
+        // Top-level event
+        if (item['@type'] === 'Event') {
+          const ev = extractFromJsonLd(item);
+          if (ev) events.push(ev);
+        }
+        // Events nested inside an Organization or ItemList
+        const nested = item.event || item.subEvent || item.itemListElement || [];
+        for (const sub of (Array.isArray(nested) ? nested : [nested])) {
+          const target = sub.item || sub;
+          if (target?.['@type'] === 'Event') {
+            const ev = extractFromJsonLd(target);
+            if (ev) events.push(ev);
+          }
+        }
+      }
+    } catch (e) {
+      // skip malformed block
+    }
   }
 
   return events;
 }
 
-function findEntries(obj, depth = 0) {
-  if (depth > 10 || !obj || typeof obj !== 'object') return [];
-  
-  // Look for arrays that contain event-like objects
-  if (Array.isArray(obj)) {
-    if (obj.length > 0 && obj[0]?.event?.name) return obj;
-    return obj.flatMap(item => findEntries(item, depth + 1));
-  }
-
-  // Check common Luma data keys
-  for (const key of ['entries', 'events', 'items', 'calendarEntries']) {
-    if (obj[key] && Array.isArray(obj[key]) && obj[key].length > 0) {
-      return obj[key];
-    }
-  }
-
-  return Object.values(obj).flatMap(v => findEntries(v, depth + 1));
-}
-
-function extractEvent(entry) {
+function extractFromJsonLd(ev) {
   try {
-    const ev = entry.event || entry;
-    if (!ev?.name) return null;
-
-    const slug = ev.url || ev.slug || (ev.api_id ? ev.api_id : null);
-    if (!slug) return null;
+    // Get slug/url from @id (e.g. "https://luma.com/beast_mode")
+    const id = ev['@id'] || '';
+    const slug = id.replace(/^https?:\/\/(luma\.com|lu\.ma)\//, '').split('?')[0];
+    if (!slug || !ev.name) return null;
 
     // Parse start time
     let date = '', time = '';
-    if (ev.start_at) {
-      const d = new Date(ev.start_at);
-      date = d.toISOString().split('T')[0];
-      time = d.toTimeString().slice(0, 5);
+    if (ev.startDate) {
+      const d = new Date(ev.startDate);
+      if (!isNaN(d)) {
+        date = d.toISOString().split('T')[0];
+        time = d.toTimeString().slice(0, 5);
+      }
     }
 
-    // Get venue
+    // Venue
     let venue = 'Cannes';
-    if (ev.geo_address_info?.full_address) venue = ev.geo_address_info.full_address.split(',')[0];
-    else if (ev.location) venue = ev.location;
+    if (ev.location?.name && ev.location.name !== 'Register to See Address') {
+      venue = ev.location.name.split(',')[0].trim();
+    } else if (ev.location?.address && ev.location.address !== 'Register to See Address') {
+      venue = ev.location.address.split(',')[0].trim();
+    }
 
-    // Get host
-    let host = '';
-    if (entry.hosts?.length > 0) host = entry.hosts.map(h => h.name).join(', ');
-    else if (ev.organizer?.name) host = ev.organizer.name;
+    // Host from organizer or performer
+    const hostSources = [].concat(ev.organizer || [], ev.performer || []);
+    const host = hostSources
+      .map(h => h.name || '')
+      .filter(Boolean)
+      .join(', ');
+
+    // Description
+    const desc = ev.description
+      ? ev.description.slice(0, 120).replace(/\n/g, ' ')
+      : '';
 
     return {
-      slug: slug.replace('https://luma.com/', ''),
+      slug,
       name: ev.name,
       host,
       date,
       time,
       venue,
-      url: `https://luma.com/${slug.replace('https://luma.com/', '')}`,
-      desc: ev.description ? ev.description.slice(0, 120).replace(/\n/g, ' ') : ''
+      url: `https://luma.com/${slug}`,
+      desc
     };
   } catch (e) {
     return null;
