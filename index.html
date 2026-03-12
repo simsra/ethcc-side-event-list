@@ -150,13 +150,6 @@ td:first-child { padding-left: 0; }
 .day-group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 /* ── SIDECHAIN PROMO ── */
-.promo-section { margin-top: 60px; padding: 36px 40px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 32px; }
-.promo-eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
-.promo-title { font-family: 'Instrument Serif', serif; font-size: 28px; font-weight: 400; line-height: 1.15; margin-bottom: 8px; }
-.promo-desc { font-size: 13px; color: var(--text2); max-width: 420px; line-height: 1.65; font-weight: 300; }
-.promo-btns { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
-.btn-primary { padding: 10px 20px; background: var(--text); color: var(--bg); font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 500; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; text-align: center; transition: opacity .15s; white-space: nowrap; display: block; }
-.btn-primary:hover { opacity: .8; }
 .btn-secondary { padding: 10px 20px; background: transparent; color: var(--text2); font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 400; border: 1px solid var(--border2); border-radius: 6px; text-decoration: none; text-align: center; transition: all .15s; white-space: nowrap; display: block; }
 .btn-secondary:hover { border-color: var(--text); color: var(--text); }
 
@@ -185,8 +178,6 @@ td:first-child { padding-left: 0; }
   .page { padding: 0 20px 60px; }
   .topbar { padding: 12px 20px; }
   .hero { padding: 36px 0 28px; }
-  .promo-section { grid-template-columns: 1fr; padding: 24px; }
-  .promo-btns { flex-direction: row; }
   .table-wrap { display: none; }
   .card-list { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 }
@@ -326,22 +317,6 @@ td:first-child { padding-left: 0; }
   </div>
 
 
-    <!-- SIDECHAIN PROMO -->
-  <div class="promo-section">
-    <div>
-      <div class="promo-eyebrow">Sidechain &middot; Cannes &middot; In-person</div>
-      <div class="promo-title">Stuck in your web3 career? Let's talk in Cannes.</div>
-      <div style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;margin-bottom:2px;">
-        <div style="display:flex;gap:4px;"><div style="width:10px;height:10px;border-radius:50%;background:#d1d5db;"></div><div style="width:10px;height:10px;border-radius:50%;background:#d1d5db;"></div><div style="width:10px;height:10px;border-radius:50%;background:#d1d5db;"></div><div style="width:10px;height:10px;border-radius:50%;background:#d1d5db;"></div><div style="width:10px;height:10px;border-radius:50%;background:#2563eb;"></div><div style="width:10px;height:10px;border-radius:50%;background:#2563eb;"></div><div style="width:10px;height:10px;border-radius:50%;background:#2563eb;"></div><div style="width:10px;height:10px;border-radius:50%;background:#2563eb;"></div><div style="width:10px;height:10px;border-radius:50%;background:#2563eb;"></div><div style="width:10px;height:10px;border-radius:50%;background:#2563eb;"></div></div>
-        <span style="font-size:12px;color:var(--text2);">6 of 10 slots remaining</span>
-      </div>
-      <p class="promo-desc">Book a 30-minute in-person session with the Sidechain team at EthCC. Includes a CV revamp, GitHub profile analysis, and honest advice on your next move and who's hiring. $50 &mdash; coffee on us.</p>
-    </div>
-    <div class="promo-btns">
-      <button onclick="openBooking()" class="btn-primary" style="cursor:pointer;border:none;">Book your $50 session</button>
-    </div>
-  </div>
-
   <!-- PROMOTE MODAL -->
   <div id="promoteModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
     <div style="background:#fff;border-radius:16px;padding:32px;width:min(460px,100%);box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;">
@@ -438,72 +413,6 @@ td:first-child { padding-left: 0; }
   </div>
 
   <!-- BOOKING MODAL -->
-  <div id="bookingModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#fff;border-radius:16px;padding:32px;width:min(480px,100%);box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative;">
-      <button onclick="closeBooking()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;color:#9ca3af;cursor:pointer;">&#10005;</button>
-
-      <!-- Step 1: Form -->
-      <div id="step1">
-        <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#0369a1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">30-min career session &middot; $50 USDC</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:6px;">Book your session</div>
-        <p style="font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.6;">Fill in your details, send $50 USDC to our wallet, and we'll send you the booking link within 1 hour.</p>
-
-        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-          <div>
-            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Full Name *</label>
-            <input id="bk_name" type="text" placeholder="e.g. Alex Smith" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
-          </div>
-          <div>
-            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Your Wallet Address * <span style="color:#9ca3af">(so we can match your payment)</span></label>
-            <input id="bk_wallet" type="text" placeholder="0x..." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist Mono',monospace;font-size:12px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
-          </div>
-          <div>
-            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Telegram Handle *</label>
-            <input id="bk_telegram" type="text" placeholder="@username" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"/>
-          </div>
-          <div>
-            <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">What are you looking for? * <span style="color:#9ca3af">(role, stage, chain, etc.)</span></label>
-            <textarea id="bk_role" placeholder="e.g. Senior Solidity dev role at a DeFi protocol, Series A+" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;outline:none;box-sizing:border-box;resize:none;height:72px;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
-          </div>
-        </div>
-
-        <span id="bk_err" style="font-size:12px;color:#ef4444;display:none;margin-bottom:10px;display:none;">Please fill in all fields.</span>
-        <button onclick="goToPayment()" style="width:100%;padding:12px;background:#1a1a18;color:#fff;border:none;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Continue to Payment &rarr;</button>
-      </div>
-
-      <!-- Step 2: Payment -->
-      <div id="step2" style="display:none;">
-        <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#0369a1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Step 2 of 2 &middot; Send payment</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:6px;">Send $50 USDC</div>
-        <p style="font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.6;">Send exactly <strong style="color:#1a1a18;">$50 USDC</strong> to the address below on any EVM chain. We'll match it to your wallet and send the Calendly link via Telegram within 1 hour.</p>
-
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:16px;">
-          <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">Send $50 USDC to</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <span id="payWalletDisplay" style="font-family:'Geist Mono',monospace;font-size:12px;color:#1a1a18;word-break:break-all;">0x6c15AAa1b04EBF05C5fA7857D66384f04c49aD27</span>
-            <button onclick="copyPayWallet()" id="copyPayBtn" style="flex-shrink:0;padding:5px 10px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:'Geist',sans-serif;cursor:pointer;white-space:nowrap;">Copy</button>
-          </div>
-        </div>
-
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:#92400e;line-height:1.6;">
-          &#9888; Include your wallet address <strong id="bk_wallet_confirm"></strong> as the sending address so we can match your payment.
-        </div>
-
-        <button onclick="confirmPayment()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">I've sent the payment &#10003;</button>
-        <button onclick="backToStep1()" style="width:100%;margin-top:8px;padding:10px;background:transparent;color:#6b7280;border:1px solid #e5e7eb;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;cursor:pointer;">&#8592; Back</button>
-      </div>
-
-      <!-- Step 3: Confirmation -->
-      <div id="step3" style="display:none;text-align:center;padding:16px 0;">
-        <div style="font-size:40px;margin-bottom:12px;">&#9989;</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:8px;">You're all set!</div>
-        <p style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:20px;">We'll verify your payment and send the Calendly booking link to your Telegram <strong id="bk_tg_confirm" style="color:#1a1a18;"></strong> within 1 hour.</p>
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;font-size:12px;color:#15803d;">Your session includes CV revamp + GitHub profile analysis &mdash; come prepared!</div>
-        <button onclick="closeBooking()" style="margin-top:20px;padding:10px 24px;background:#1a1a18;color:#fff;border:none;border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;cursor:pointer;">Done</button>
-      </div>
-    </div>
-  </div>
-
   <!-- FOOTER -->
   <div class="footer">
     <div class="footer-left">
@@ -807,11 +716,6 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 
   document.getElementById('walletBtn').addEventListener('click', copyWallet);
-  // Hide hiring offer after EthCC ends (Apr 2 2026 midnight CET)
-  if(new Date() > new Date('2026-04-03T00:00:00+02:00')){
-    var el = document.getElementById('hiringOffer');
-    if(el) el.style.display = 'none';
-  }
 });
 
 function copyWallet(){
@@ -928,79 +832,6 @@ function submitHiring(){
   document.getElementById('hr_contact').value='';
 }
 
-/* ── BOOKING MODAL ── */
-function openBooking(){
-  document.getElementById('bookingModal').style.display='flex';
-  document.body.style.overflow='hidden';
-}
-function closeBooking(){
-  document.getElementById('bookingModal').style.display='none';
-  document.body.style.overflow='';
-  // Reset to step 1
-  document.getElementById('step1').style.display='block';
-  document.getElementById('step2').style.display='none';
-  document.getElementById('step3').style.display='none';
-}
-function goToPayment(){
-  var name = document.getElementById('bk_name').value.trim();
-  var wallet = document.getElementById('bk_wallet').value.trim();
-  var tg = document.getElementById('bk_telegram').value.trim();
-  var role = document.getElementById('bk_role').value.trim();
-  var err = document.getElementById('bk_err');
-  if(!name||!wallet||!tg||!role){ err.style.display='block'; return; }
-  err.style.display='none';
-  document.getElementById('bk_wallet_confirm').textContent = wallet;
-  document.getElementById('step1').style.display='none';
-  document.getElementById('step2').style.display='block';
-}
-function backToStep1(){
-  document.getElementById('step2').style.display='none';
-  document.getElementById('step1').style.display='block';
-}
-function confirmPayment(){
-  var name = document.getElementById('bk_name').value.trim();
-  var wallet = document.getElementById('bk_wallet').value.trim();
-  var tg = document.getElementById('bk_telegram').value.trim();
-  var role = document.getElementById('bk_role').value.trim();
-  // Email notification via FormSubmit
-  fetch('https://formsubmit.co/ajax/simon@sidechain.so', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-    body: JSON.stringify({
-      _subject: 'EthCC $50 Session — ' + name,
-      Name: name,
-      Telegram: tg,
-      'Wallet (to verify)': wallet,
-      'Looking for': role,
-      _etherscan: 'https://etherscan.io/address/0x6c15AAa1b04EBF05C5fA7857D66384f04c49aD27'
-    })
-  });
-  document.getElementById('bk_tg_confirm').textContent = tg;
-  document.getElementById('step2').style.display='none';
-  document.getElementById('step3').style.display='block';
-}
-function copyPayWallet(){
-  var addr = '0x6c15AAa1b04EBF05C5fA7857D66384f04c49aD27';
-  var ta = document.createElement('textarea');
-  ta.value = addr;
-  ta.setAttribute('readonly','');
-  ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
-  document.body.appendChild(ta);
-  ta.focus(); ta.select(); ta.setSelectionRange(0,99999);
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-  var btn = document.getElementById('copyPayBtn');
-  btn.textContent='Copied!';
-  btn.style.borderColor='#2563eb';
-  btn.style.color='#2563eb';
-  setTimeout(function(){ btn.textContent='Copy'; btn.style.borderColor=''; btn.style.color=''; },2000);
-}
-// Close modal on backdrop click
-document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('bookingModal').addEventListener('click',function(e){
-    if(e.target===this) closeBooking();
-  });
-});
 </script>
 </body>
 </html>
