@@ -51,6 +51,32 @@
   --sidechain: #2563eb;
 }
 
+[data-theme="dark"] {
+  --bg: #111110;
+  --bg2: #1a1a18;
+  --bg3: #222220;
+  --border: #2a2a27;
+  --border2: #3a3a36;
+  --text: #e8e8e3;
+  --text2: #9a9a90;
+  --text3: #5a5a54;
+  --accent: #60a5fa;
+  --accent-bg: #1e2d4a;
+  --tag-builder: #a78bfa;
+  --tag-builder-bg: #1e1a2e;
+  --tag-investor: #34d399;
+  --tag-investor-bg: #0d1f1a;
+  --tag-fitness: #c084fc;
+  --tag-fitness-bg: #1e1528;
+  --tag-marketing: #4ade80;
+  --tag-marketing-bg: #0f1f14;
+  --tag-general: #38bdf8;
+  --tag-general-bg: #0d1f2e;
+  --tag-social: #f472b6;
+  --tag-social-bg: #2a1120;
+  --sidechain: #60a5fa;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { background: var(--bg); color: var(--text); font-family: 'Geist', sans-serif; font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
@@ -59,7 +85,9 @@ body { background: var(--bg); color: var(--text); font-family: 'Geist', sans-ser
 .page { max-width: 1100px; margin: 0 auto; padding: 0 40px 80px; }
 
 /* ── TOP NAV ── */
-.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 40px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); z-index: 100; max-width: 100%; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 40px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px); z-index: 100; max-width: 100%; }
+.theme-toggle { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: none; border: 1px solid var(--border2); border-radius: 6px; cursor: pointer; color: var(--text3); transition: all .12s; flex-shrink: 0; }
+.theme-toggle:hover { background: var(--bg2); color: var(--text); }
 .topbar-left { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); }
 .topbar-left a { color: var(--text2); text-decoration: none; }
 .topbar-left a:hover { color: var(--text); }
@@ -209,6 +237,9 @@ td:first-child { padding-left: 0; }
       See the latest on EthCC on <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-left:1px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.738l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
     </a>
     <span class="hero-stat" style="font-size:11px;"><span class="live-dot"></span>&nbsp;Live &middot; Cannes</span>
+    <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+    </button>
     <button onclick="openSubmitEvent()" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--text);color:var(--bg);border:none;border-radius:6px;font-family:'Geist',sans-serif;font-size:11px;font-weight:500;cursor:pointer;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">+ Submit event</button>
   </div>
 </div>
@@ -819,6 +850,24 @@ function submitEvent(){
   ['se_name','se_host','se_date','se_time','se_venue','se_url','se_contact'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('se_tag').value='';
 }
+
+/* ── DARK MODE ── */
+var MOON_ICON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+var SUN_ICON = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('themeIcon').innerHTML = dark ? SUN_ICON : MOON_ICON;
+}
+function toggleTheme() {
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  applyTheme(!isDark);
+}
+(function() {
+  var saved = localStorage.getItem('theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved ? saved === 'dark' : prefersDark);
+})();
 
 /* ── HIRING FORM ── */
 function submitHiring(){
