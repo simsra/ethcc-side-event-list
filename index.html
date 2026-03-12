@@ -681,14 +681,14 @@ function renderTable(){
   }
 
   // Group by day
-  var byDay={}, order=[];
+  var byDay={};
   filtered.forEach(function(e){
-    if(!byDay[e.day]){byDay[e.day]=[];order.push(e.day);}
+    if(!byDay[e.day]) byDay[e.day]=[];
     byDay[e.day].push(e);
   });
 
   var html='', cardHtml='';
-  order.forEach(function(day){
+  DAYS_ORDER.filter(function(d){ return d!=='all' && byDay[d] && byDay[d].length; }).forEach(function(day){
     var evs=byDay[day];
     // Day group header row
     if(activeDay==='all'){
