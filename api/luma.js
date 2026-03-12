@@ -1,26 +1,31 @@
 // Vercel Serverless Function — /api/luma.js
-// Fetches and parses events from luma.com/ethcc
-// No API key needed — parses Schema.org JSON-LD from the public calendar page
+// Fetches events from luma.com/ethcc via the public Luma calendar API
+// cal-8bduHTaJ4tgVP7T is the main EthCC[9] aggregator calendar ID
+
+const CALENDAR_ID = 'cal-8bduHTaJ4tgVP7T';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
   try {
-    const response = await fetch('https://luma.com/ethcc', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+    const response = await fetch(
+      `https://api.lu.ma/calendar/get-items?calendar_api_id=${CALENDAR_ID}&period=future&pagination_limit=100`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0',
+        }
       }
-    });
+    );
 
     if (!response.ok) {
-      throw new Error(`Luma returned ${response.status}`);
+      throw new Error(`Luma API returned ${response.status}`);
     }
 
-    const html = await response.text();
-    const events = parseEvents(html);
+    const data = await response.json();
+    const entries = data.entries || [];
+    const events = entries.map(extractEvent).filter(Boolean);
 
     res.status(200).json({ ok: true, count: events.length, events });
 
@@ -29,76 +34,49 @@ export default async function handler(req, res) {
   }
 }
 
-function parseEvents(html) {
-  const events = [];
-
-  // Luma now embeds events as Schema.org JSON-LD
-  const ldRe = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g;
-  let m;
-  while ((m = ldRe.exec(html)) !== null) {
-    try {
-      const data = JSON.parse(m[1]);
-      const items = Array.isArray(data) ? data : [data];
-      for (const item of items) {
-        // Top-level event
-        if (item['@type'] === 'Event') {
-          const ev = extractFromJsonLd(item);
-          if (ev) events.push(ev);
-        }
-        // Events nested inside an Organization or ItemList
-        const nested = item.event || item.subEvent || item.itemListElement || [];
-        for (const sub of (Array.isArray(nested) ? nested : [nested])) {
-          const target = sub.item || sub;
-          if (target?.['@type'] === 'Event') {
-            const ev = extractFromJsonLd(target);
-            if (ev) events.push(ev);
-          }
-        }
-      }
-    } catch (e) {
-      // skip malformed block
-    }
-  }
-
-  return events;
-}
-
-function extractFromJsonLd(ev) {
+function extractEvent(entry) {
   try {
-    // Get slug/url from @id (e.g. "https://luma.com/beast_mode")
-    const id = ev['@id'] || '';
-    const slug = id.replace(/^https?:\/\/(luma\.com|lu\.ma)\//, '').split('?')[0];
-    if (!slug || !ev.name) return null;
+    const ev = entry.event;
+    if (!ev?.name) return null;
 
-    // Parse start time
+    // url field is the RSVP link (can be external), slug derived from luma event api_id
+    // Use entry.api_id (calev-xxx) is not a slug — use ev.url if it's a luma URL, else build from api_id
+    const lumaUrl = ev.url && ev.url.includes('lu.ma') || ev.url && ev.url.includes('luma.com')
+      ? ev.url
+      : null;
+    const slug = lumaUrl
+      ? lumaUrl.replace(/^https?:\/\/(luma\.com|lu\.ma)\//, '').split('?')[0]
+      : entry.api_id; // fallback to calev-xxx
+
+    // Parse start time (UTC ISO string — convert to local Paris time for display)
     let date = '', time = '';
-    if (ev.startDate) {
-      const d = new Date(ev.startDate);
+    if (ev.start_at) {
+      // Luma returns UTC; display in Europe/Paris (UTC+1 in March, UTC+2 in April)
+      const d = new Date(ev.start_at);
       if (!isNaN(d)) {
-        date = d.toISOString().split('T')[0];
-        time = d.toTimeString().slice(0, 5);
+        const paris = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Europe/Paris',
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', hour12: false
+        }).formatToParts(d);
+        const p = Object.fromEntries(paris.map(x => [x.type, x.value]));
+        date = `${p.year}-${p.month}-${p.day}`;
+        time = `${p.hour}:${p.minute}`;
       }
     }
 
-    // Venue
+    // Venue from geo_address_info
     let venue = 'Cannes';
-    if (ev.location?.name && ev.location.name !== 'Register to See Address') {
-      venue = ev.location.name.split(',')[0].trim();
-    } else if (ev.location?.address && ev.location.address !== 'Register to See Address') {
-      venue = ev.location.address.split(',')[0].trim();
-    }
+    const geo = ev.geo_address_info;
+    if (geo?.address) venue = geo.address;
+    else if (geo?.short_address) venue = geo.short_address.split(',')[0].trim();
+    else if (geo?.city) venue = geo.city;
 
-    // Host from organizer or performer
-    const hostSources = [].concat(ev.organizer || [], ev.performer || []);
-    const host = hostSources
-      .map(h => h.name || '')
-      .filter(Boolean)
-      .join(', ');
+    // Host
+    const host = ev.host || '';
 
-    // Description
-    const desc = ev.description
-      ? ev.description.slice(0, 120).replace(/\n/g, ' ')
-      : '';
+    // RSVP URL — prefer luma URL, fall back to ev.url
+    const url = lumaUrl || ev.url || `https://luma.com/${slug}`;
 
     return {
       slug,
@@ -107,8 +85,8 @@ function extractFromJsonLd(ev) {
       date,
       time,
       venue,
-      url: `https://luma.com/${slug}`,
-      desc
+      url,
+      desc: ''
     };
   } catch (e) {
     return null;
